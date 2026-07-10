@@ -13,7 +13,7 @@ jobs:
 
   backend:
 
-    name: FastAPI Backend
+    name: FastAPI Validation
 
     runs-on: ubuntu-latest
 
@@ -23,11 +23,9 @@ jobs:
 
     steps:
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -38,21 +36,21 @@ jobs:
 
       - name: Verify FastAPI Imports
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PYTHONPATH: .
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           JUICE_SHOP_API: https://demo.owasp-juice.shop/api/Products
         run: |
           python -c "import app.main"
 
-      - name: Run Integration Tests
+      - name: Run Unit Tests
         env:
           PYTHONPATH: .
         run: |
-          python -m pytest tests/integration -v
+          python -m pytest tests/unit -v
 
   juice-shop:
 
-    name: Juice Shop Build
+    name: Build Juice Shop
 
     runs-on: ubuntu-latest
 
@@ -62,23 +60,21 @@ jobs:
 
     steps:
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Juice Shop
+      - name: Build
         run: npm run build
 
   docker:
 
-    name: Docker Validation
+    name: Validate Docker
 
     runs-on: ubuntu-latest
 
@@ -88,10 +84,9 @@ jobs:
 
     steps:
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Validate Docker Compose
+      - name: Validate Compose
         run: docker compose config
 
       - name: Build AI Service
