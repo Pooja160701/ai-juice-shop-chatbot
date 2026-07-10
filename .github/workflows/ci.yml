@@ -75,8 +75,8 @@ jobs:
           node-version: "22"
 
       - name: Install Dependencies
-        run: npm ci
-
+        run: npm install --no-audit --no-fund
+        
       - name: Build Juice Shop
         run: npm run build
 
