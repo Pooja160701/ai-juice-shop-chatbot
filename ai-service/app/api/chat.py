@@ -1,14 +1,12 @@
 from fastapi import APIRouter
+import time
+
 from app.rag.generator import rag_generator
-
-from app.schemas.chat import (
-    ChatRequest,
-    ChatResponse,
+from app.monitoring.metrics import (
+    REQUEST_COUNT,
+    REQUEST_LATENCY,
 )
-
-from app.services.openai_service import (
-    openai_service,
-)
+from app.schemas.chat import ChatRequest, ChatResponse
 
 router = APIRouter()
 
@@ -19,6 +17,14 @@ router = APIRouter()
 )
 def ask(request: ChatRequest):
 
-    answer = rag_generator.ask(request.message)
+    REQUEST_COUNT.inc()
+    print(">>>>>>>> REQUEST COUNT INCREMENTED <<<<<<<<")
 
-    return ChatResponse(response=answer)
+    start = time.time()
+
+    try:
+        answer = rag_generator.ask(request.message)
+        return ChatResponse(response=answer)
+
+    finally:
+        REQUEST_LATENCY.observe(time.time() - start)

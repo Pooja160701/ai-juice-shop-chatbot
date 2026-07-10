@@ -13,6 +13,9 @@ class ProductRetriever:
 
         query_embedding = embedding_service.create_embedding(question)
 
+        print("Retriever called")
+        RAG_SEARCHES.inc()
+
         results = collection.query(
             query_embeddings=[query_embedding],
             n_results=k,
@@ -35,8 +38,7 @@ class ProductRetriever:
                         "distance": distance,
                     }
                 )
-                
-        RAG_SEARCHES.inc()
+
         return filtered_docs
 
 

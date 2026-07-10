@@ -1,20 +1,30 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+
+from dotenv import load_dotenv
+
+ENV_FILE = os.getenv("ENV_FILE", ".env.local")
+
+load_dotenv(ENV_FILE)
 
 
-class Settings(BaseSettings):
-    PROJECT_NAME: str = "Juice Shop AI Assistant"
-    API_VERSION: str = "v1"
+class Settings:
 
-    OPENAI_API_KEY: str
-    OPENAI_MODEL: str = "gpt-5"
+    PROJECT_NAME = "Juice Shop AI Assistant"
 
-    JUICE_SHOP_API: str
+    API_VERSION = "v1"
 
-    CHROMA_PATH: str = "./chroma_db"
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        extra="ignore",
+    OPENAI_MODEL = os.getenv(
+        "OPENAI_MODEL",
+        "gpt-5-mini"
+    )
+
+    JUICE_SHOP_API = os.getenv("JUICE_SHOP_API")
+
+    CHROMA_PATH = os.getenv(
+        "CHROMA_PATH",
+        "./chroma_db"
     )
 
 

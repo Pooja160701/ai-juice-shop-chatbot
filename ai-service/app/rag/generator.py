@@ -26,6 +26,9 @@ class RAGGenerator:
         context = context_formatter.build_context(
             docs
         )
+        
+        print("OpenAI completion called")
+        OPENAI_REQUESTS.inc()
 
         response = client.chat.completions.create(
             model=settings.OPENAI_MODEL,
@@ -48,8 +51,7 @@ Question
                 },
             ],
         )
-        
-        OPENAI_REQUESTS.inc()
+
         return response.choices[0].message.content
 
 
