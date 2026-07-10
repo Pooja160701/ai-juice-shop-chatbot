@@ -1,10 +1,14 @@
 import os
-
 from dotenv import load_dotenv
 
-ENV_FILE = os.getenv("ENV_FILE", ".env.local")
+env_file = os.getenv("ENV_FILE")
 
-load_dotenv(ENV_FILE)
+if env_file and os.path.exists(env_file):
+    load_dotenv(env_file)
+elif os.path.exists(".env.local"):
+    load_dotenv(".env.local")
+elif os.path.exists(".env"):
+    load_dotenv(".env")
 
 
 class Settings:
@@ -17,14 +21,14 @@ class Settings:
 
     OPENAI_MODEL = os.getenv(
         "OPENAI_MODEL",
-        "gpt-5-mini"
+        "gpt-5-mini",
     )
 
     JUICE_SHOP_API = os.getenv("JUICE_SHOP_API")
 
     CHROMA_PATH = os.getenv(
         "CHROMA_PATH",
-        "./chroma_db"
+        "./chroma_db",
     )
 
 
