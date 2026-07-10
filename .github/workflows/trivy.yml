@@ -1,0 +1,53 @@
+name: Trivy Security Scan
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  trivy:
+
+    name: Scan Docker Images
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build AI Service Image
+        run: |
+          docker build \
+            -t ai-service:latest \
+            ./ai-service
+
+      - name: Build Juice Shop Image
+        run: |
+          docker build \
+            -t juice-shop:latest \
+            ./juice-shop
+
+      - name: Run Trivy Scan (AI Service)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ai-service:latest
+          format: table
+          exit-code: 0
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      - name: Run Trivy Scan (Juice Shop)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: juice-shop:latest
+          format: table
+          exit-code: 0
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
