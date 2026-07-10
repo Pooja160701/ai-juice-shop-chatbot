@@ -1,27 +1,25 @@
-fastapi
-uvicorn
+fastapi==0.139.0
+uvicorn==0.51.0
 
-chromadb
+openai==2.44.0
 
-openai
+chromadb==1.5.9
 
-python-dotenv
+requests==2.34.2
 
-requests
+python-dotenv==1.2.2
 
-numpy
+pydantic==2.13.4
+pydantic-settings==2.14.2
 
-pydantic
-pydantic-settings
+python-multipart==0.0.32
 
-python-multipart
+httpx==0.28.1
 
-tiktoken
+numpy==2.2.6
 
-httpx
+prometheus_client==0.25.0
 
-PyYAML
+PyYAML==6.0.3
 
-tenacity
-pytest
-pytest-cov
+tenacity==9.1.4
