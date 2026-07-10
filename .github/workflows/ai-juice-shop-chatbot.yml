@@ -39,14 +39,16 @@ jobs:
       - name: Verify FastAPI Imports
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PYTHONPATH: .
         run: |
           python -c "import app.main"
 
       - name: Run Unit Tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PYTHONPATH: .
         run: |
-          pytest tests -v
+          python -m pytest tests -v
 
   juice-shop:
 
