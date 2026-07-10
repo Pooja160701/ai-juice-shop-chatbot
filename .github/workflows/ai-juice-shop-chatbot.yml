@@ -44,11 +44,11 @@ jobs:
         run: |
           python -c "import app.main"
 
-      - name: Run Unit Tests
+      - name: Run Integration Tests
         env:
           PYTHONPATH: .
         run: |
-          python -m pytest tests/unit -v
+          python -m pytest tests/integration -v
 
   juice-shop:
 
