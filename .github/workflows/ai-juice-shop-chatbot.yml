@@ -46,11 +46,9 @@ jobs:
 
       - name: Run Unit Tests
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PYTHONPATH: .
-          JUICE_SHOP_API: https://demo.owasp-juice.shop/api/Products
         run: |
-          python -m pytest tests -v
+          python -m pytest tests/unit -v
 
   juice-shop:
 
