@@ -22,6 +22,7 @@ spec:
 
       containers:
         - name: ai-service
+
           image: ghcr.io/pooja160701/ai-service:latest
           imagePullPolicy: Always
 
@@ -43,3 +44,28 @@ spec:
 
             - name: JUICE_SHOP_API
               value: "http://juice-shop:3000/api/Products"
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+
+            initialDelaySeconds: 20
+            periodSeconds: 20
