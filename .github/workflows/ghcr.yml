@@ -10,7 +10,6 @@ permissions:
   packages: write
 
 jobs:
-
   publish:
 
     runs-on: ubuntu-latest
@@ -20,6 +19,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Convert Repository Owner to Lowercase
+        run: |
+          echo "OWNER_LC=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -27,26 +30,34 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      ##################################################
+      # AI SERVICE
+      ##################################################
+
       - name: Build AI Service Image
         run: |
           docker build \
-          -t ghcr.io/${{ github.repository_owner }}/ai-service:latest \
-          -t ghcr.io/${{ github.repository_owner }}/ai-service:${{ github.sha }} \
-          ./ai-service
+            -t ghcr.io/${OWNER_LC}/ai-service:latest \
+            -t ghcr.io/${OWNER_LC}/ai-service:${{ github.sha }} \
+            ./ai-service
 
       - name: Push AI Service Image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/ai-service:latest
-          docker push ghcr.io/${{ github.repository_owner }}/ai-service:${{ github.sha }}
+          docker push ghcr.io/${OWNER_LC}/ai-service:latest
+          docker push ghcr.io/${OWNER_LC}/ai-service:${{ github.sha }}
+
+      ##################################################
+      # JUICE SHOP
+      ##################################################
 
       - name: Build Juice Shop Image
         run: |
           docker build \
-          -t ghcr.io/${{ github.repository_owner }}/juice-shop:latest \
-          -t ghcr.io/${{ github.repository_owner }}/juice-shop:${{ github.sha }} \
-          ./juice-shop
+            -t ghcr.io/${OWNER_LC}/juice-shop:latest \
+            -t ghcr.io/${OWNER_LC}/juice-shop:${{ github.sha }} \
+            ./juice-shop
 
       - name: Push Juice Shop Image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/juice-shop:latest
-          docker push ghcr.io/${{ github.repository_owner }}/juice-shop:${{ github.sha }}
+          docker push ghcr.io/${OWNER_LC}/juice-shop:latest
+          docker push ghcr.io/${OWNER_LC}/juice-shop:${{ github.sha }}
