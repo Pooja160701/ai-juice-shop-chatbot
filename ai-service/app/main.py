@@ -8,6 +8,7 @@ from app.middleware.exception_handler import generic_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.stream import router as stream_router
 from app.api.health import router as health_router
+from prometheus_client import make_asgi_app
 
 app = FastAPI(
     title="Juice Shop AI Assistant",
@@ -38,6 +39,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+metrics_app = make_asgi_app()
+
+app.mount("/metrics", metrics_app)
 
 @app.get("/")
 def health():

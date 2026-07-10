@@ -1,6 +1,6 @@
 from app.ingestion.chroma_client import collection
 from app.ingestion.embeddings import embedding_service
-
+from app.monitoring.metrics import RAG_SEARCHES
 
 class ProductRetriever:
 
@@ -35,7 +35,8 @@ class ProductRetriever:
                         "distance": distance,
                     }
                 )
-
+                
+        RAG_SEARCHES.inc()
         return filtered_docs
 
 

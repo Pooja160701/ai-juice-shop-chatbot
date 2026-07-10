@@ -1,6 +1,7 @@
 from openai import OpenAI
 
 from app.core.config import settings
+from app.monitoring.metrics import EMBEDDING_REQUESTS
 
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -13,7 +14,8 @@ class EmbeddingService:
             model="text-embedding-3-small",
             input=text
         )
-
+        
+        EMBEDDING_REQUESTS.inc()
         return response.data[0].embedding
 
 

@@ -2,6 +2,7 @@ from app.prompts.rag_prompt import SYSTEM_PROMPT
 
 from app.rag.retriever import product_retriever
 from app.rag.formatter import context_formatter
+from app.monitoring.metrics import OPENAI_REQUESTS
 
 from openai import OpenAI
 
@@ -47,7 +48,8 @@ Question
                 },
             ],
         )
-
+        
+        OPENAI_REQUESTS.inc()
         return response.choices[0].message.content
 
 
