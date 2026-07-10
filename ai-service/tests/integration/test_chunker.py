@@ -1,18 +1,20 @@
-from app.ingestion.loader import product_loader
 from app.ingestion.chunker import product_chunker
 
 
 def test_chunk_products():
 
-    products = product_loader.load_products()
+    products = [
+        {
+            "id": 1,
+            "name": "Banana Juice",
+            "description": "Fresh banana juice",
+            "price": 2.99,
+            "deluxePrice": 3.99,
+        }
+    ]
 
     docs = product_chunker.chunk_products(products)
 
-    assert isinstance(docs, list)
-    assert len(docs) > 0
-
-    first = docs[0]
-
-    assert "id" in first
-    assert "text" in first
-    assert "metadata" in first
+    assert len(docs) == 1
+    assert docs[0]["id"] == "1"
+    assert "Banana Juice" in docs[0]["text"]

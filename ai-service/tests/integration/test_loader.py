@@ -1,14 +1,22 @@
+from unittest.mock import patch
+
 from app.ingestion.loader import product_loader
 
 
-def test_load_products():
+@patch("app.ingestion.loader.requests.get")
+def test_load_products(mock_get):
+
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {
+        "data": [
+            {
+                "id": 1,
+                "name": "Banana Juice"
+            }
+        ]
+    }
 
     products = product_loader.load_products()
 
-    assert isinstance(products, list)
-    assert len(products) > 0
-
-    first = products[0]
-
-    assert "id" in first
-    assert "name" in first
+    assert len(products) == 1
+    assert products[0]["name"] == "Banana Juice"
