@@ -4,14 +4,10 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "ai-juice-shop-chatbot/**"
 
   pull_request:
     branches:
       - main
-    paths:
-      - "ai-juice-shop-chatbot/**"
 
 jobs:
 
@@ -23,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ai-juice-shop-chatbot/ai-service
+        working-directory: ai-service
 
     steps:
 
@@ -40,7 +36,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify Imports
+      - name: Verify FastAPI Imports
         run: |
           python -c "import app.main"
 
@@ -56,14 +52,14 @@ jobs:
 
     defaults:
       run:
-        working-directory: ai-juice-shop-chatbot/juice-shop
+        working-directory: juice-shop
 
     steps:
 
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -83,10 +79,6 @@ jobs:
     needs:
       - backend
       - juice-shop
-
-    defaults:
-      run:
-        working-directory: ai-juice-shop-chatbot
 
     steps:
 
