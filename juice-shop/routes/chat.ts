@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+import axios from "axios"
 import { type Request, type Response } from 'express'
 import config from 'config'
 import { streamText, tool, stepCountIs } from 'ai'
@@ -21,6 +22,10 @@ import { type Review } from '../data/types'
 import logger from '../lib/logger'
 import { Counter } from 'prom-client'
 
+const AI_SERVICE_URL =
+  process.env.AI_SERVICE_URL ||
+  "http://localhost:8000/rest/chat"
+  
 export function summarizeLlmError (error: unknown): string {
   if (!(error instanceof Error)) {
     return String(error).split('\n')[0]
@@ -200,69 +205,48 @@ export function chat () {
     const systemPrompt = buildSystemPrompt(userName)
 
     try {
-      const result = streamText({
-        model: provider(model),
-        system: systemPrompt,
-        messages,
-        tools: { ...chatTools },
-        maxRetries: config.get<number>('application.chatBot.llmMaxRetries'),
-        stopWhen: stepCountIs(10),
-        onError: ({ error }) => {
-          logger.warn('Chatbot stream error: ' + summarizeLlmError(error))
+      const response = await axios.post(
+        AI_SERVICE_URL,
+        { messages },
+        {
+          responseType: "stream",
+          headers: {
+            "Content-Type": "application/json"
+          }
         }
-      })
+      )
 
-      for await (const event of result.fullStream) {
-        switch (event.type) {
-          case 'text-delta':
-            res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: event.text } }] })}\n\n`)
-            break
-          case 'tool-call':
-            challengeUtils.solveIf(challenges.aiDebuggingChallenge, () => {
-              const token = utils.jwtFrom(req)
-              const decoded = token ? security.decode(token) as { data?: { role?: string } } : undefined
-              const role = decoded?.data?.role
-              return req.cookies.show_tool_calls === 'true' && role !== roles.admin
-            })
-            metricToolCalls.labels({ tool: event.toolName }).inc()
-            res.write(`data: ${JSON.stringify({
-              choices: [{
-                delta: {
-                  tool_calls: [{
-                    id: event.toolCallId,
-                    type: 'function',
-                    function: { name: event.toolName, arguments: JSON.stringify(event.input) }
-                  }]
-                }
-              }]
-            })}\n\n`)
-            break
-          case 'finish':
-            res.write(`data: ${JSON.stringify({ choices: [{ finish_reason: event.finishReason }] })}\n\n`)
-            if (event.totalUsage.inputTokens) {
-              metricInputTokensTotal.inc(event.totalUsage.inputTokens)
-              metricInputTokens.labels({ type: 'cache_read' }).inc(event.totalUsage.inputTokenDetails?.cacheReadTokens ?? 0)
-              metricInputTokens.labels({ type: 'cache_write' }).inc(event.totalUsage.inputTokenDetails?.cacheWriteTokens ?? 0)
-              metricInputTokens.labels({ type: 'no_cache' }).inc(event.totalUsage.inputTokenDetails?.noCacheTokens ?? 0)
-            }
-            if (event.totalUsage.outputTokens) {
-              metricOutputTokensTotal.inc(event.totalUsage.outputTokens)
-              metricOutputTokens.labels({ type: 'reasoning' }).inc(event.totalUsage.outputTokenDetails?.reasoningTokens ?? 0)
-              metricOutputTokens.labels({ type: 'text' }).inc(event.totalUsage.outputTokenDetails?.textTokens ?? 0)
-            }
-            break
-          case 'error':
-            res.write(`data: ${JSON.stringify({ error: `LLM error: ${event.error as string}` })}\n\n`)
-            break
+      response.data.pipe(res)
+
+      response.data.on("error", (err: Error) => {
+        logger.error("AI Service Error: " + err.message)
+
+        if (!res.headersSent) {
+          res.write(
+            `data: ${JSON.stringify({
+              error: "AI Service unavailable"
+            })}\n\n`
+          )
+
+          res.write("data: [DONE]\n\n")
         }
+
+        res.end()
+      })
+    }
+    catch (error) {
+      logger.warn("Chatbot connection error: " + summarizeLlmError(error))
+
+      if (!res.headersSent) {
+        res.write(
+          `data: ${JSON.stringify({
+            error: "LLM API is not reachable"
+          })}\n\n`
+        )
+
+        res.write("data: [DONE]\n\n")
       }
 
-      res.write('data: [DONE]\n\n')
-      res.end()
-    } catch (error) {
-      logger.warn('Chatbot connection error: ' + summarizeLlmError(error))
-      res.write(`data: ${JSON.stringify({ error: 'LLM API is not reachable' })}\n\n`)
-      res.write('data: [DONE]\n\n')
       res.end()
     }
   }
